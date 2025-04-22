@@ -20,7 +20,11 @@ const router = createBrowserRouter([
     ],
   },
   { path: "*", element: <NotFoundPage /> }, // 404 fallback
-]);
+  ],
+  {
+    basename: "/rcm-help", // <-- Add this line (use your repo name)
+  }
+);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

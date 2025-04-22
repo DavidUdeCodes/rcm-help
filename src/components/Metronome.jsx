@@ -197,7 +197,9 @@ const Metronome = ({ tempo = 120 }) => {
       <CircularBpmKnob bpm={bpm} setBpm={setBpm} />
       <div className="w-full max-w-sm mx-auto px-4">
         <h1 className="text-xs text-center">
-          (Double click metronome to change BPM)
+          (Double click metronome to change BPM
+          <br />
+          and turn off silent mode if you can't hear sound)
         </h1>
       </div>
       <button
