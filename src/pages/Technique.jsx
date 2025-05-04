@@ -72,13 +72,17 @@ const getPossibleKeys = (root, mode, selectedType) => {
 
 const getArpeggioInversions = (arpeggioName, inversionSetting) => {
   if (inversionSetting === "Root only") {
-    return ["Root position"];
+    return "Root position";
   }
-  // 7th chords have 4 positions, triads have 3
-  if (arpeggioName.includes("7th")) {
-    return ["Root position", "1st inversion", "2nd inversion", "3rd inversion"];
-  }
-  return ["Root position", "1st inversion", "2nd inversion"];
+  
+  // Create the array of possible inversions
+  const inversions = arpeggioName.includes("7th")
+    ? ["Root position", "1st inversion", "2nd inversion", "3rd inversion"]
+    : ["Root position", "1st inversion", "2nd inversion"];
+    
+  // Select a random inversion from the array
+  const randomIndex = Math.floor(Math.random() * inversions.length);
+  return inversions[randomIndex];
 };
 
 const Technique = () => {
@@ -103,58 +107,60 @@ const Technique = () => {
     e.preventDefault();
     const types = type === "Random" ? Object.keys(techniqueData10) : [type];
     const generated = [];
-
-    while (generated.length < count) {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 1000; // Prevent infinite loops
+  
+    while (generated.length < count && attempts < MAX_ATTEMPTS) {
+      attempts++;
       const selectedType = types[Math.floor(Math.random() * types.length)];
       let options = techniqueData10[selectedType];
-
+  
       if (selectedType === "Chords" && chordStyle !== "Random") {
         options = options.filter(option => option.style === chordStyle.toLowerCase());
       }
-
+  
       let entry;
       let selectedKey = "N/A";
-
+  
       // Random root and mode selection
       if (root === "Random" && mode === "Random") {
         entry = options[Math.floor(Math.random() * options.length)];
         selectedKey = entry.keys[Math.floor(Math.random() * entry.keys.length)];
       } else {
         const possibleKeys = getPossibleKeys(root, mode, selectedType);
-
         const matchingOptions = options.filter(option =>
           option.keys.some(k => possibleKeys.includes(k))
         );
-
+  
         if (matchingOptions.length === 0) continue;
-
+  
         entry = matchingOptions[Math.floor(Math.random() * matchingOptions.length)];
         const matchingKeys = entry.keys.filter(k => possibleKeys.includes(k));
         selectedKey = matchingKeys[Math.floor(Math.random() * matchingKeys.length)] || "N/A";
       }
-
+  
+      // Create the exercise object based on type
+      let exercise = {
+        type: selectedType,
+        name: entry.name,
+        key: selectedKey,
+        tempo: entry.tempo
+      };
+  
+      // Add type-specific properties
       if (selectedType === "Arpeggios") {
-        const inversions = getArpeggioInversions(entry.name, arpeggioInversions);
-        inversions.forEach(inv => {
-          generated.push({
-            type: selectedType,
-            name: entry.name,
-            key: selectedKey,
-            tempo: entry.tempo,
-            inversion: inv
-          });
-        });
-      } else {
-        generated.push({
-          type: selectedType,
-          name: entry.name,
-          key: selectedKey,
-          tempo: entry.tempo,
-          style: entry.style || null
-        });
+        exercise.inversion = getArpeggioInversions(entry.name, arpeggioInversions);
+      } else if (selectedType === "Chords") {
+        exercise.style = entry.style;
       }
+  
+      generated.push(exercise);
     }
-
+  
+    if (generated.length < count) {
+      console.warn("Could not generate all requested exercises");
+    }
+  
     setExercises(generated);
   };
 
