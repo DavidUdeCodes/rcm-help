@@ -11,9 +11,7 @@ const BPM_STEP = 1;
 const SCHEDULER_INTERVAL = 25;
 const NOTE_DURATION = 0.1;
 const SCHEDULE_AHEAD_TIME = 0.1;
-const OSCILLATOR_FREQUENCY = 900;
 
-// Utility functions
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 const angleToBpm = (angle) => {
@@ -25,20 +23,21 @@ const bpmToAngle = (bpm) => {
 };
 
 const Metronome = ({ tempo = 120 }) => {
-  // State
   const [bpm, setBpm] = useState(clamp(tempo, MIN_BPM, MAX_BPM));
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentBeat, setCurrentBeat] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [tempBpm, setTempBpm] = useState(bpm);
+  const [isSampleLoaded, setIsSampleLoaded] = useState(false);
+  const [accentFirstBeat, setAccentFirstBeat] = useState(true);
 
-  // Refs
   const knobRef = useRef(null);
   const draggingRef = useRef(false);
   const audioContextRef = useRef(null);
   const nextNoteTimeRef = useRef(0);
   const schedulerTimerRef = useRef(null);
   const beatCountRef = useRef(0);
+  const woodblockBufferRef = useRef(null);
 
   // --- Knob Drag Logic ---
   const handlePointerMove = useCallback((e) => {
@@ -70,18 +69,30 @@ const Metronome = ({ tempo = 120 }) => {
 
   // --- Audio scheduling ---
   const scheduleNote = useCallback((time) => {
-    if (!audioContextRef.current) return;
-    const osc = audioContextRef.current.createOscillator();
-    const gain = audioContextRef.current.createGain();
-    osc.connect(gain);
+  if (!audioContextRef.current || !woodblockBufferRef.current) return;
+  const source = audioContextRef.current.createBufferSource();
+  source.buffer = woodblockBufferRef.current;
+
+  const beat = beatCountRef.current;
+
+  // Accent logic: louder and higher pitch for first beat
+  const gain = audioContextRef.current.createGain();
+    if (accentFirstBeat && beat === 0) {
+      gain.gain.value = 2; // much louder
+      source.playbackRate.value = 1.4; // slightly higher pitch
+    } else {
+      gain.gain.value = 0.4;
+      source.playbackRate.value = 1.0;
+    }
+
+    source.connect(gain);
     gain.connect(audioContextRef.current.destination);
-    osc.frequency.value = OSCILLATOR_FREQUENCY;
-    gain.gain.value = beatCountRef.current === 0 ? 1 : 0.8; // Accent first beat
-    osc.start(time);
-    osc.stop(time + NOTE_DURATION);
+
+    source.start(time);
+
     beatCountRef.current = (beatCountRef.current + 1) % 4;
-    setCurrentBeat(beatCountRef.current);
-  }, []);
+    setCurrentBeat(beat);
+  }, [accentFirstBeat]);
 
   const scheduler = useCallback(() => {
     if (!audioContextRef.current) return;
@@ -105,7 +116,6 @@ const Metronome = ({ tempo = 120 }) => {
       }
       return;
     }
-    // Keyboard controls when not editing
     switch (e.key) {
       case 'ArrowUp':
       case 'ArrowRight':
@@ -142,6 +152,10 @@ const Metronome = ({ tempo = 120 }) => {
 
   // --- Metronome start/stop ---
   const toggleMetronome = useCallback(async () => {
+    if (!woodblockBufferRef.current) {
+      alert("Woodblock sound is still loading. Please wait a moment and try again.");
+      return;
+    }
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
     }
@@ -186,6 +200,26 @@ const Metronome = ({ tempo = 120 }) => {
         audioContextRef.current = null;
       }
     };
+  }, []);
+
+  // --- Load woodblock sample as soon as possible ---
+  useEffect(() => {
+    let isMounted = true;
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    fetch('/rcm-help/woodblock.mp3')
+      .then(res => res.arrayBuffer())
+      .then(arrayBuffer => ctx.decodeAudioData(arrayBuffer))
+      .then(audioBuffer => {
+        if (isMounted) {
+          woodblockBufferRef.current = audioBuffer;
+          setIsSampleLoaded(true);
+        }
+        ctx.close();
+      })
+      .catch(() => {
+        setIsSampleLoaded(false);
+      });
+    return () => { isMounted = false; };
   }, []);
 
   // --- Knob position ---
@@ -298,8 +332,21 @@ const Metronome = ({ tempo = 120 }) => {
         className={`px-8 py-2 text-lg rounded-lg font-bold text-white transition-colors ${
           isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
         }`}
+        disabled={!isSampleLoaded}
+        style={{ opacity: isSampleLoaded ? 1 : 0.5, cursor: isSampleLoaded ? 'pointer' : 'not-allowed' }}
       >
-        {isPlaying ? 'Stop' : 'Play'}
+        {isSampleLoaded ? (isPlaying ? 'Stop' : 'Play') : 'Loading...'}
+      </button>
+
+      <button
+        onClick={() => setAccentFirstBeat(a => !a)}
+        className={`px-4 py-1 mt-2 rounded font-semibold border ${
+          accentFirstBeat
+            ? 'bg-blue-100 text-blue-700 border-blue-400'
+            : 'bg-gray-100 text-gray-700 border-gray-300'
+        }`}
+      >
+        {accentFirstBeat ? 'Accent First Beat: ON' : 'Accent First Beat: OFF'}
       </button>
     </div>
   );

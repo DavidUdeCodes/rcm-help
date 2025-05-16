@@ -13,7 +13,7 @@ const techniqueData10 = {
     { name: "Separated by a 3rd", keys: ["Gb major", "G major", "Ab major"], tempo: 104 },
     { name: "Separated by a 6th", keys: ["A major", "Bb major", "B major"], tempo: 104 },
     { name: "In Octaves", keys: ["Bb", "Bb minor", "B", "B minor"], tempo: 80 },
-    { name: "Chromatic in Octaves", keys: ["any note F#–B"], tempo: 80 },
+    { name: "Chromatic in Octaves", keys: ["Gb major", "G major", "Ab major", "A major", "Bb major", "B major"], tempo: 80 },
   ],
   Chords: [
     { name: "Tonic Four-note (broken)", keys: ["Gb major", "G major", "Ab major", "A major", "Bb major", "B major", "F# minor", "G minor", "G# minor", "A minor", "Bb minor", "B minor"], tempo: 96, style: "broken" },
@@ -166,17 +166,17 @@ const Technique = () => {
 
   return (
     <div className="main-font min-h-screen flex flex-col items-center justify-center bg-main-background text-center p-4">
-      <h1 className="text-5xl font-medium mb-8 mt-26 text-gray-800">RCM Help</h1>
+      <h1 className="text-5xl font-medium mb-8 mt-26 text-gray-800">Technique</h1>
       <h2 className="text-3xl mb-6 text-gray-700">Technique Exercise Generator</h2>
 
       <div className="w-full max-w-lg bg-white p-6 rounded-xl shadow-xl text-left">
-        <p className="mb-4">Select your preferences to generate exercises:</p>
+        <p className="mb-4 text-center">Select your preferences to generate exercises:</p>
         <form onSubmit={handleSubmit} className="space-y-4">
 
           <div>
             <label className="block font-medium">RCM Level</label>
-            <select className="w-full border border-gray-300 p-2 rounded" disabled>
-              <option>{level}</option>
+            <select className="w-full border border-gray-300 p-2 rounded">
+              <option>RCM Level 10</option>
             </select>
           </div>
 
@@ -238,10 +238,16 @@ const Technique = () => {
               min={1} max={12}
             />
           </div>
-
-          <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-            Generate
-          </button>
+          
+          <div className='flex justify-center items-center space-x-10 mx-auto mt-6'>
+            <button type="submit" className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+              Generate Exercises
+            </button>
+            <h1 className='text-xl'>OR</h1>
+            <button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+              Practice Exam
+            </button>
+          </div>
 
         </form>
 

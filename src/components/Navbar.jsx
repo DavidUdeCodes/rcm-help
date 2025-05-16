@@ -9,14 +9,14 @@ const Navbar = () => {
       <div className=" mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <span className="text-xl font-medium text-gray-80">RCM Help</span>
+            <span className="text-xl font-medium text-gray-80">RCM Piano Help</span>
           </div>
           <div className="hidden md:flex space-x-8 items-center">
             <Link to="/" className="text-gray-600 hover:text-blue-500 hover:scale-[1.15] transition duration-300 ease-in-out">Home</Link>
             <Link to="/technique" className="text-gray-600 hover:text-blue-500 hover:scale-[1.15] transition duration-300 ease-in-out">Technique</Link>
             <Link to="/ear-training" className="text-gray-600 hover:text-blue-500 hover:scale-[1.15] transition duration-300 ease-in-out">Ear Training</Link>
             <Link to="/sight-reading" className="text-gray-600 hover:text-blue-500 hover:scale-[1.15] transition duration-300 ease-in-out">Sight Reading</Link>
-            <Link to="/metronome-page" className="text-gray-600 hover:text-blue-500 hover:scale-[1.15] transition duration-300 ease-in-out">Online Metronome</Link>
+            <Link to="/metronome-page" className="text-gray-600 hover:text-blue-500 hover:scale-[1.15] transition duration-300 ease-in-out">Metronome</Link>
           </div>
           <div className="flex md:hidden items-center">
             <button onClick={() => setIsOpen(!isOpen)} className="text-gray-800 text-xl font-bold">

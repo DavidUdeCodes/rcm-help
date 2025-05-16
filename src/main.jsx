@@ -5,6 +5,12 @@ import Home from "./pages/Home"; // This is your home page
 import Technique from "./pages/Technique";
 import NotFoundPage from "./pages/NotFoundPage";
 import MetronomePage from "./pages/MetronomePage";
+import EarTraining from "./pages/EarTraining";
+import IntervalTest from "./pages/IntervalTest";
+import ChordTest from "./pages/ChordTest";
+import ChordPrgTest from "./pages/ChordPrgTest";
+import MelodyPlayback from "./pages/MelodyPlayback";
+import SightReading from "./pages/SightReading";
 import App from "./App"; // <-- Import the layout
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -16,6 +22,12 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> }, // home page
       { path: "technique", element: <Technique /> },
       { path: "metronome-page", element: <MetronomePage /> },
+      { path: "ear-training", element: <EarTraining />},
+      { path: "interval-test", element: <IntervalTest />},
+      { path: "chord-test", element: <ChordTest />},
+      { path: "chordprg-test", element: <ChordPrgTest />},
+      { path: "melody-playback", element: <MelodyPlayback />},
+      { path: "sight-reading", element: <SightReading />},
       // add more pages here
     ],
   },
