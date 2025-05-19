@@ -37,7 +37,7 @@ const Metronome = ({ tempo = 120 }) => {
   const nextNoteTimeRef = useRef(0);
   const schedulerTimerRef = useRef(null);
   const beatCountRef = useRef(0);
-  const woodblockBufferRef = useRef(null);
+  const metronomeBufferRef = useRef(null);
 
   // --- Knob Drag Logic ---
   const handlePointerMove = useCallback((e) => {
@@ -69,9 +69,9 @@ const Metronome = ({ tempo = 120 }) => {
 
   // --- Audio scheduling ---
   const scheduleNote = useCallback((time) => {
-  if (!audioContextRef.current || !woodblockBufferRef.current) return;
+  if (!audioContextRef.current || !metronomeBufferRef.current) return;
   const source = audioContextRef.current.createBufferSource();
-  source.buffer = woodblockBufferRef.current;
+  source.buffer = metronomeBufferRef.current;
 
   const beat = beatCountRef.current;
 
@@ -152,8 +152,8 @@ const Metronome = ({ tempo = 120 }) => {
 
   // --- Metronome start/stop ---
   const toggleMetronome = useCallback(async () => {
-    if (!woodblockBufferRef.current) {
-      alert("Woodblock sound is still loading. Please wait a moment and try again.");
+    if (!metronomeBufferRef.current) {
+      alert("metronome sound is still loading. Please wait a moment and try again.");
       return;
     }
     if (!audioContextRef.current) {
@@ -202,16 +202,16 @@ const Metronome = ({ tempo = 120 }) => {
     };
   }, []);
 
-  // --- Load woodblock sample as soon as possible ---
+  // --- Load metronome sample as soon as possible ---
   useEffect(() => {
     let isMounted = true;
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    fetch('/rcm-help/woodblock.mp3')
+    fetch('/rcm-help/metronomeSound.mp3')
       .then(res => res.arrayBuffer())
       .then(arrayBuffer => ctx.decodeAudioData(arrayBuffer))
       .then(audioBuffer => {
         if (isMounted) {
-          woodblockBufferRef.current = audioBuffer;
+          metronomeBufferRef.current = audioBuffer;
           setIsSampleLoaded(true);
         }
         ctx.close();

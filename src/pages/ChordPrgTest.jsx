@@ -1,53 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
-
-// Only include the available samples (A, C, D#, F# for each octave)
-const sampleMap = {
-  "C3": "/rcm-help/piano_samples/C3v10.wav",
-  "D#3": "/rcm-help/piano_samples/Ds3v10.wav", 
-  "F#3": "/rcm-help/piano_samples/Fs3v10.wav", 
-  "A3": "/rcm-help/piano_samples/A3v10.wav",
-  "C4": "/rcm-help/piano_samples/C4v10.wav",
-  "D#4": "/rcm-help/piano_samples/Ds4v10.wav",
-  "F#4": "/rcm-help/piano_samples/Fs4v10.wav",
-  "A4": "/rcm-help/piano_samples/A4v10.wav",
-  "C5": "/rcm-help/piano_samples/C5v10.wav",
-  "D#5": "/rcm-help/piano_samples/Ds5v10.wav",
-  "F#5": "/rcm-help/piano_samples/Fs5v10.wav",
-  "A5": "/rcm-help/piano_samples/A5v10.wav",
-  "C6": "/rcm-help/piano_samples/C6v10.wav",
-};
-
-const CHORDS_MAJOR = [
-  { name: "Tonic (I)", value: "I", notes: [0, 4, 7, 12] },
-  { name: "Subdominant (IV)", value: "IV", notes: [5, 9, 12, 17] },
-  { name: "Dominant (V)", value: "V", notes: [7, 11, 14, 19] },
-  { name: "Submediant (vi)", value: "vi", notes: [9, 12, 16, 21] },
-  { name: "Cadential 6/4 (I6/4)", value: "I6/4", notes: [7, 12, 16, 19] },
-];
-
-const CHORDS_MINOR = [
-  { name: "Tonic (i)", value: "i", notes: [0, 3, 7, 12] },
-  { name: "Subdominant (iv)", value: "iv", notes: [5, 8, 12, 17] },
-  { name: "Dominant (V)", value: "V", notes: [7, 11, 14, 19] },
-  { name: "Submediant (VI)", value: "VI", notes: [8, 12, 15, 20] },
-  { name: "Cadential 6/4 (i6/4)", value: "i6/4", notes: [7, 12, 15, 19] },
-];
-
-const RCM10 = {
-  major: ["I", "IV", "V", "vi", "I6/4"],
-  minor: ["i", "iv", "V", "VI", "i6/4"],
-};
-const RCM9 = {
-  major: ["I", "IV", "V", "vi"],
-  minor: ["i", "iv", "V", "VI"],
-};
-
-const PRESETS = [
-  { label: "Custom", major: [], minor: [] },
-  { label: "RCM Level 10", ...RCM10 },
-  { label: "RCM Level 9", ...RCM9 },
-];
+import sampleMap from "../data/soundSampleMap.js";
+import { PRESETS, CHORDS_MAJOR, CHORDS_MINOR, PRESET_PROGRESSION_MAP} from "../data/chordPrgTestData.js";
 
 function midiToNoteName(midi) {
   const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -65,7 +19,22 @@ function getRandomRootMidi() {
   return 48 + Math.floor(Math.random() * 24);
 }
 
-function generateProgression({ mode, chords, length }) {
+function generateProgression({ mode, chords, length, presetLabel }) {
+  // Check for hard-coded progressions for this preset
+  if (PRESET_PROGRESSION_MAP[presetLabel]) {
+    // Only use progressions where all chords are in the current mode's chord list
+    const filtered = PRESET_PROGRESSION_MAP[presetLabel].filter(
+      prog => prog.every(chord => chords.includes(chord))
+    );
+    // If there are any valid progressions, pick one at random
+    if (filtered.length > 0) {
+      return getRandomFromArray(filtered);
+    }
+    // If not, fall back to all progressions for the preset
+    return getRandomFromArray(PRESET_PROGRESSION_MAP[presetLabel]);
+  }
+
+  // --- Your existing random progression logic below ---
   const tonic = mode === "major" ? "I" : "i";
   const dominant = "V";
   const cad64 = mode === "major" ? "I6/4" : "i6/4";
@@ -100,16 +69,16 @@ export default function ChordPrgTest() {
 
   // Setup states
   const [showSetup, setShowSetup] = useState(true);
-  const [mode, setMode] = useState("major");
+  const [mode, setMode] = useState("random");
   const [selectedChords, setSelectedChords] = useState({
     major: ["I", "IV", "V", "vi"],
     minor: ["i", "iv", "V", "VI"],
   });
   const [preset, setPreset] = useState(PRESETS[0].label);
-  const [progressionLength, setProgressionLength] = useState(5);
+  const [progressionLength, setProgressionLength] = useState(4);
 
   // Test states
-  const [actualMode, setActualMode] = useState("major");
+  const [actualMode, setActualMode] = useState("random");
   const [progression, setProgression] = useState([]);
   const [currentGuessIndex, setCurrentGuessIndex] = useState(0);
   const [userGuesses, setUserGuesses] = useState([]);
@@ -132,6 +101,21 @@ export default function ChordPrgTest() {
     };
   }, []);
 
+  useEffect(() => {
+    if (preset === "RCM Level 5") {
+      setMode("major");
+      setProgressionLength(3);
+    }
+    else if (preset === "RCM Level 6" || preset === "RCM Level 7" || preset === "RCM Level 8") {
+      setMode("random");
+      setProgressionLength(4);
+    }
+    else if (preset === "RCM Level 9" || preset === "RCM Level 10") {
+      setMode("random");
+      setProgressionLength(5);
+    }
+  }, [preset]);
+
   // Handle preset change
   const handlePresetChange = (e) => {
     const presetLabel = e.target.value;
@@ -141,13 +125,6 @@ export default function ChordPrgTest() {
       major: presetObj.major.length ? [...presetObj.major] : [],
       minor: presetObj.minor.length ? [...presetObj.minor] : [],
     });
-    if (presetLabel === "RCM Level 9") {
-      setProgressionLength(4);
-      setMode("random");
-    } else if (presetLabel === "RCM Level 10") {
-      setProgressionLength(5);
-      setMode("random");
-    }
   };
 
   // Handle chord checkbox change
@@ -192,6 +169,7 @@ export default function ChordPrgTest() {
       mode: chosenMode,
       chords,
       length: progressionLength,
+      presetLabel: preset, // Pass the current preset label
     });
     setProgression(prog);
     setCurrentGuessIndex(0);
@@ -335,21 +313,33 @@ export default function ChordPrgTest() {
                 <input
                   type="radio"
                   checked={mode === "major"}
-                  onChange={() => setMode("major")}
+                  onChange={() => {
+                    setMode("major");
+                    setPreset("Custom");
+                  }}
+  
                 /> Major
               </label>
               <label>
                 <input
                   type="radio"
                   checked={mode === "minor"}
-                  onChange={() => setMode("minor")}
+                  onChange={() => {
+                    setMode("minor");
+                    setPreset("Custom");
+                  }}
+  
                 /> Minor
               </label>
               <label>
                 <input
                   type="radio"
                   checked={mode === "random"}
-                  onChange={() => setMode("random")}
+                  onChange={() => {
+                    setMode("random");
+                    setPreset("Custom");
+                  }}
+  
                 /> Random
               </label>
             </div>
@@ -391,7 +381,10 @@ export default function ChordPrgTest() {
               min={2}
               max={5}
               value={progressionLength}
-              onChange={e => setProgressionLength(Math.max(2, Math.min(5, Number(e.target.value))))}
+              onChange={e => {
+                setProgressionLength(Math.max(2, Math.min(5, Number(e.target.value))));
+                setPreset("Custom");
+              }}
               className="w-20 p-2 rounded border"
             />
           </div>
@@ -423,9 +416,9 @@ export default function ChordPrgTest() {
           </button>
         </div>
         <h1 className="text-5xl font-medium text-gray-800 mb-4">Chord Progression Test</h1>
-        <div className="text-lg text-gray-700 mb-2">
+        {/* <div className="text-lg text-gray-700 mb-2">
           Key: <span className="font-bold">{midiToNoteName(rootMidi).replace(/\d+$/, '')} {actualMode}</span>
-        </div>
+        </div> */}
         <div className="text-lg text-gray-700 mb-6">
           Score: <span className="font-bold">{score.correct}</span> / {score.total}
         </div>

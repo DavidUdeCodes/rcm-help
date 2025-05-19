@@ -1,22 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
-
-// Only include the available samples (A, C, D#, F# for each octave)
-const sampleMap = {
-  "C3": "/rcm-help/piano_samples/C3v10.wav",
-  "D#3": "/rcm-help/piano_samples/Ds3v10.wav", 
-  "F#3": "/rcm-help/piano_samples/Fs3v10.wav", 
-  "A3": "/rcm-help/piano_samples/A3v10.wav",
-  "C4": "/rcm-help/piano_samples/C4v10.wav",
-  "D#4": "/rcm-help/piano_samples/Ds4v10.wav",
-  "F#4": "/rcm-help/piano_samples/Fs4v10.wav",
-  "A4": "/rcm-help/piano_samples/A4v10.wav",
-  "C5": "/rcm-help/piano_samples/C5v10.wav",
-  "D#5": "/rcm-help/piano_samples/Ds5v10.wav",
-  "F#5": "/rcm-help/piano_samples/Fs5v10.wav",
-  "A5": "/rcm-help/piano_samples/A5v10.wav",
-  "C6": "/rcm-help/piano_samples/C6v10.wav",
-};
+import sampleMap from "../data/soundSampleMap.js";
 
 const intervals = [
   { name: "Minor 2nd", semitones: 1 },
@@ -30,7 +14,7 @@ const intervals = [
   { name: "Major 6th", semitones: 9 },
   { name: "Minor 7th", semitones: 10 },
   { name: "Major 7th", semitones: 11 },
-  { name: "Perfect 8th", semitones: 12 },
+  { name: "Perfect Octave", semitones: 12 },
   { name: "Minor 9th", semitones: 13 },
   { name: "Major 9th", semitones: 14 },
 ];
@@ -41,13 +25,45 @@ const PRESETS = [
     intervals: [],
   },
   {
-    label: "RCM 10 (All Intervals)",
-    intervals: intervals.map(i => i.name),
+    label: "RCM Level 1",
+    intervals: ["Minor 3rd", "Major 3rd"]
   },
   {
-    label: "RCM 9 (Up to Octave)",
-    intervals: intervals.filter(i => i.semitones <= 12).map(i => i.name),
+    label: "RCM Level 2",
+    intervals: ["Minor 3rd", "Major 3rd", "Perfect 5th"]
   },
+  {
+    label: "RCM Level 3",
+    intervals: ["Minor 3rd", "Major 3rd", "Perfect 4th", "Perfect 5th"]
+  },
+  {
+    label: "RCM Level 4",
+    intervals: ["Minor 3rd", "Major 3rd", "Perfect 4th", "Perfect 5th", "Perfect Octave"]
+  },
+  {
+    label: "RCM Level 5",
+    intervals: ["Minor 3rd", "Major 3rd", "Perfect 4th", "Perfect 5th", "Minor 6th", "Major 6th", "Perfect Octave"]
+  },
+  {
+    label: "RCM Level 6",
+    intervals: ["Minor 2nd", "Major 2nd","Minor 3rd", "Major 3rd", "Perfect 4th", "Perfect 5th", "Minor 6th", "Major 6th", "Perfect Octave"]
+  },
+  {
+    label: "RCM Level 7",
+    intervals: ["Minor 2nd", "Major 2nd","Minor 3rd", "Major 3rd", "Perfect 4th", "Perfect 5th", "Minor 6th", "Major 6th","Minor 7th", "Major 7th", "Perfect Octave"]
+  },
+  {
+    label: "RCM Level 8",
+    intervals: intervals.filter(i => i.semitones <= 12).map(i => i.name)
+  },
+  {
+    label: "RCM Level 9",
+    intervals: intervals.filter(i => i.semitones <= 12).map(i => i.name)
+  },
+  {
+    label: "RCM Level 10",
+    intervals: intervals.map(i => i.name),
+  }
 ];
 
 const PLAYBACK_MODES = [
@@ -136,10 +152,10 @@ export default function IntervalTest() {
     setSelectedIntervals(presetObj.intervals);
 
     // Set playback modes based on preset
-    if (presetLabel === "RCM 10 (All Intervals)") {
+    if (presetLabel === "RCM Level 10") {
       setSelectedPlaybackModes(PLAYBACK_MODES.map(m => m.value)); // all modes
-    } else if (presetLabel === "RCM 9 (Up to Octave)") {
-      setSelectedPlaybackModes(PLAYBACK_MODES.map(m => m.value)); // or specify which modes you want
+    } else {
+      setSelectedPlaybackModes(["ascending", "descending"]); // or specify which modes you want
       // Example: setSelectedPlaybackModes(["ascending", "descending"]);
     }
     // For Custom, don't change playback modes
