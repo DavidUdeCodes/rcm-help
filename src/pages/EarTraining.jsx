@@ -31,7 +31,7 @@ const EarTraining = () => {
               Melody Playback
             </button>
           </Link>
-          <Link to="">
+          <Link to="/ear-practice-test">
             <button className="bg-blue-400 text-white text-2xl font-bold py-4 px-8 rounded-2xl shadow
                 transition duration-300 ease-in-out transform scale-[1.4] hover:bg-blue-500 hover:scale-[1.5]">
               Practice Exam

@@ -11,6 +11,7 @@ import ChordTest from "./pages/ChordTest";
 import ChordPrgTest from "./pages/ChordPrgTest";
 import MelodyPlayback from "./pages/MelodyPlayback";
 import SightReading from "./pages/SightReading";
+import EarPracticeTest from "./pages/EarPracticeTest";
 import App from "./App"; // <-- Import the layout
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: "chordprg-test", element: <ChordPrgTest />},
       { path: "melody-playback", element: <MelodyPlayback />},
       { path: "sight-reading", element: <SightReading />},
+      { path: "ear-practice-test", element: <EarPracticeTest />},
       // add more pages here
     ],
   },
