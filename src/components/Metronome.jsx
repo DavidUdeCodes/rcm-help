@@ -206,7 +206,7 @@ const Metronome = ({ tempo = 120 }) => {
   useEffect(() => {
     let isMounted = true;
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    fetch('/rcm-help/metronomeSound.mp3')
+    fetch('/metronomeSound.mp3')
       .then(res => res.arrayBuffer())
       .then(arrayBuffer => ctx.decodeAudioData(arrayBuffer))
       .then(audioBuffer => {
